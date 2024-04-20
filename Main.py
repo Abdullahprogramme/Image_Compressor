@@ -193,14 +193,14 @@ def Recursive_Search(quadrant, max_depth, append_leaf):
 
 
 def main(image_path, option):
-    MAX_DEPTH = 8
+    MAX_DEPTH = 9
     SIZE_MULTIPLIER = 1
     if option == 'slightly less better':
         DETAIL_THRESHOLD = 10
         user_depth = 6
     elif option == 'slightly better':
         DETAIL_THRESHOLD = 3
-        user_depth = 8
+        user_depth = 9
         
 
     # image_path = 'BMI.jpg'
