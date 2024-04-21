@@ -3,6 +3,7 @@ import os
 import tempfile
 from Main import main
 from io import BytesIO
+import base64
 
 # Set page configuration
 st.set_page_config(page_title='QuadTree Image Compressor', layout="wide", page_icon=':camera:')
@@ -22,6 +23,8 @@ def Main():
     st.sidebar.image("images/QuadTree.png", use_column_width=True, width=100)
     st.sidebar.title('Options')
     compression_level = st.sidebar.radio("Compression Level", ("slightly less better", "slightly better",))
+
+    need_gif = st.sidebar.selectbox('Do you want a gif?', ('No', 'Yes'))
 
     st.sidebar.markdown("---")
     st.sidebar.title('About')
@@ -98,31 +101,48 @@ def Main():
 
         # Progress Bar
         if st.button('Start Compression'):
-            with st.spinner('Generating compressed image...have patience, it may take a while!'):
-                compressed_image = main(uploaded_file, compression_level)
+            with st.spinner('Generating image...have patience, it may take a while!'):
+                if need_gif == 'Yes':
+                    compressed_image, gif = main(uploaded_file, compression_level, True)
+                    # Convert the BytesIO object to a base64 encoded string
+                    gif.seek(0)
+                    gif_base64 = base64.b64encode(gif.read()).decode()
+                else:
+                    compressed_image = main(uploaded_file, compression_level)
                 st.success('Image Compression Complete!')
 
                 temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
                 compressed_image.save(temp_file.name)
 
-                st.subheader('Compressed Image')
-                st.image(temp_file.name, caption='Compressed Image', use_column_width=True)
-                compressed_size = os.path.getsize(temp_file.name)
-                st.write('**Compressed Size:** ' + convert_size(compressed_size))
+            st.subheader('Compressed Image')
+            st.image(temp_file.name, caption='Compressed Image', use_column_width=True)
+            compressed_size = os.path.getsize(temp_file.name)
+            st.write('**Compressed Size:** ' + convert_size(compressed_size))
 
-                # Calculate and display the compression performance
-                compression_ratio = (original_size - compressed_size) / original_size * 100
-                st.success(f'**Compression Performance:** The image was compressed by {compression_ratio:.2f}%')
+            # Convert the compressed image to binary data
+            buffered = BytesIO()
+            compressed_image.save(buffered, format="PNG")
+            binary_data = buffered.getvalue()
 
-                # Convert the compressed image to binary data
-                buffered = BytesIO()
-                compressed_image.save(buffered, format="PNG")
-                binary_data = buffered.getvalue()
+            # Download button for the compressed image
+            st.download_button(label="Download Compressed Image", data=binary_data, file_name='compressed_image.png', mime='image/png')
+            st.markdown("---")
 
-                # Download button
-                st.markdown("---")
-                st.download_button(label="Download", data=binary_data, file_name='compressed_image.png', mime='image/png')
+            # Calculate and display the compression performance
+            compression_ratio = (original_size - compressed_size) / original_size * 100
+            st.success(f'**Compression Performance:** The image was compressed by {compression_ratio:.2f}%')
 
+            if need_gif == 'Yes':
+                st.subheader('Gif')
+                # Embed the base64 encoded string in an HTML img tag
+                st.markdown(f'<img src="data:image/gif;base64,{gif_base64}" alt="Gif" style="width:50%">', unsafe_allow_html=True)
+                gif_size = len(gif_base64)
+                st.write('**Gif Size:** ' + convert_size(gif_size))
+
+                # Download button for the GIF
+                gif.seek(0)
+                st.download_button(label="Download GIF", data=gif, file_name="compressed_gif.gif", mime="image/gif")
+            
 # Run the main application
 if __name__ == '__main__':
     Main()
