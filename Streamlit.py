@@ -19,6 +19,8 @@ def convert_size(size_bytes):
     
 # Define function for main application
 def Main():
+    st.toast('Welcome to QuadTree Image Compressor!')
+    st.error('If a image is already very small in size, then the compression will not take place as when dividing into 4 quadrants, the size of the quadrant will be less than the threshold value and the quadrant will not be compressed further. So, their will be an error in the compression process. Please upload an image with a size greater than 100 KB.')
     # Sidebar
     st.sidebar.image("images/QuadTree.png", use_column_width=True, width=100)
     st.sidebar.title('Options')
