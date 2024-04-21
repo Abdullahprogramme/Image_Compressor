@@ -19,7 +19,7 @@ def convert_size(size_bytes):
 # Define function for main application
 def Main():
     # Sidebar
-    st.sidebar.image("QuadTree.png", use_column_width=True, width=100)
+    st.sidebar.image("images/QuadTree.png", use_column_width=True, width=100)
     st.sidebar.title('Options')
     compression_level = st.sidebar.radio("Compression Level", ("slightly less better", "slightly better",))
 
@@ -56,18 +56,34 @@ def Main():
     st.sidebar.markdown("---")
     
     # Social Media Icons
+    # st.sidebar.markdown('''
+    #     ## Connect with me
+    #     If you have any questions or if you want to see more of my projects, feel free to connect with me:
+
+    #     [LinkedIn](https://www.linkedin.com/in/abdullahtariq78/) |
+    #     [GitHub](https://github.com/Abdullahprogramme) |
+    #     [Portfolio](https://abdullahtariq2004.netlify.app/)
+    # ''')
+    
     st.sidebar.markdown('''
         ## Connect with me
         If you have any questions or if you want to see more of my projects, feel free to connect with me:
-
-        [LinkedIn](https://www.linkedin.com/in/abdullahtariq78/) |
-        [GitHub](https://github.com/Abdullahprogramme) |
-        [Portfolio](https://abdullahtariq2004.netlify.app/)
     ''')
+
+    col1, col2 = st.sidebar.columns([1,6])
+
+    col1.image("images/linkedin.png", width=24)
+    col2.write('<a style="text-decoration: none;" href="https://www.linkedin.com/in/abdullahtariq78/">LinkedIn</a>', unsafe_allow_html=True)
+
+    col1.image("images/github.png", width=24)
+    col2.write('<a style="text-decoration: none;" href="https://github.com/Abdullahprogramme">GitHub</a>', unsafe_allow_html=True)
+
+    col1.image("images/briefcase.png", width=26)
+    col2.write('<a style="text-decoration: none;" href="https://abdullahtariq2004.netlify.app/">Portfolio</a>', unsafe_allow_html=True)
+
 
     # Main content
     st.title('QuadTree Image Compressor')
-    
 
     st.divider()
 
