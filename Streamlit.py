@@ -7,7 +7,6 @@ from io import BytesIO
 # Set page configuration
 st.set_page_config(page_title='QuadTree Image Compressor', layout="wide", page_icon=':camera:')
 
-
 # Helper function to convert size in bytes to appropriate unit
 def convert_size(size_bytes):
     if size_bytes < 1024:
@@ -56,15 +55,15 @@ def Main():
 
     st.sidebar.markdown("---")
     
-    # Display icons using st.image()
-    st.sidebar.caption('''
+    # Social Media Icons
+    st.sidebar.markdown('''
         ## Connect with me
         If you have any questions or if you want to see more of my projects, feel free to connect with me:
-                        
-        [LinkedIn](https://www.linkedin.com/in/abdullahtariq78/) | [GitHub](https://github.com/Abdullahprogramme) | [Portfolio](https://abdullahtariq2004.netlify.app/)
-        ''')
-    
 
+        [LinkedIn](https://www.linkedin.com/in/abdullahtariq78/) |
+        [GitHub](https://github.com/Abdullahprogramme) |
+        [Portfolio](https://abdullahtariq2004.netlify.app/)
+    ''')
 
     # Main content
     st.title('QuadTree Image Compressor')
@@ -78,28 +77,35 @@ def Main():
     if uploaded_file and compression_level:
         st.subheader('Original Image')
         st.image(uploaded_file, caption='Original Image', use_column_width=True)
-        st.write('**Original Size:** ' + convert_size(len(uploaded_file.getvalue())))
+        original_size = len(uploaded_file.getvalue())
+        st.write('**Original Size:** ' + convert_size(original_size))
 
+        # Progress Bar
         if st.button('Start Compression'):
-            st.write('**Generating compressed image...have patience, it may take a while!**')
-            compressed_image = main(uploaded_file, compression_level)
-            st.write('**Image Compression Complete!**')
+            with st.spinner('Generating compressed image...have patience, it may take a while!'):
+                compressed_image = main(uploaded_file, compression_level)
+                st.success('Image Compression Complete!')
 
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-            compressed_image.save(temp_file.name)
+                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+                compressed_image.save(temp_file.name)
 
-            st.subheader('Compressed Image')
-            st.image(temp_file.name, caption='Compressed Image', use_column_width=True)
-            st.write('**Compressed Size:** ' + convert_size(os.path.getsize(temp_file.name)))
+                st.subheader('Compressed Image')
+                st.image(temp_file.name, caption='Compressed Image', use_column_width=True)
+                compressed_size = os.path.getsize(temp_file.name)
+                st.write('**Compressed Size:** ' + convert_size(compressed_size))
 
-            # Convert the compressed image to binary data
-            buffered = BytesIO()
-            compressed_image.save(buffered, format="PNG")
-            binary_data = buffered.getvalue()
+                # Calculate and display the compression performance
+                compression_ratio = (original_size - compressed_size) / original_size * 100
+                st.success(f'**Compression Performance:** The image was compressed by {compression_ratio:.2f}%')
 
-            # Download button
-            st.markdown("---")
-            st.download_button(label="Save Compressed Image", data=binary_data, file_name='compressed_image.png', mime='image/png')
+                # Convert the compressed image to binary data
+                buffered = BytesIO()
+                compressed_image.save(buffered, format="PNG")
+                binary_data = buffered.getvalue()
+
+                # Download button
+                st.markdown("---")
+                st.download_button(label="Download", data=binary_data, file_name='compressed_image.png', mime='image/png')
 
 # Run the main application
 if __name__ == '__main__':
