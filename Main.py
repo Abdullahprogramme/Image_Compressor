@@ -1,6 +1,6 @@
 import numpy as np 
 from PIL import Image, ImageDraw
-
+import io
 
 def Weighted_Average(histogram):
     total = sum(histogram)
@@ -191,8 +191,40 @@ def Recursive_Search(quadrant, max_depth, append_leaf):
         for child in quadrant['children']:
             Recursive_Search(child, max_depth, append_leaf)
 
+def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, show_lines=False):
+    '''
+    description:
+        This function creates a gif of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        file_name: name of the gif file
+        duration: duration of the gif
+        loop: flag to loop the gif
+        show_lines: flag to show the lines in the gif
+    '''
 
-def main(image_path, option):
+    gif = []
+    end_product_image = Create_Image(root, max_depth, gif_depth, show_lines=show_lines)
+
+    for i in range(gif_depth):
+        image = Create_Image(root, max_depth, i, show_lines=show_lines)
+        gif.append(image)
+    for _ in range(4):
+        gif.append(end_product_image)
+
+    gif_bytes = io.BytesIO()
+    gif[0].save(
+        gif_bytes,
+        format='GIF',
+        save_all=True,
+        append_images=gif[1:],
+        duration=duration, loop=loop)
+    gif_bytes.seek(0)
+
+    return gif_bytes
+
+def main(image_path, option, need_gif=False):
     MAX_DEPTH = 9
     SIZE_MULTIPLIER = 1
     if option == 'slightly less better':
@@ -211,8 +243,9 @@ def main(image_path, option):
     user_depth = 7
     image = Create_Image(root, max_depth, user_depth, show_lines=False)
     
-    # image.show() # displaying the image
-    # image.save('quadtree.jpg') # saving the image
+    if need_gif == True:
+        gif = Create_Gif(root, max_depth, user_depth, duration=1000, loop=0, show_lines=True)
+        return image, gif
     return image
 
 # High quality image:
