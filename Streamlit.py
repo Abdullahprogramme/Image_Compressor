@@ -5,7 +5,7 @@ from Main import main
 from io import BytesIO
 
 # Set page configuration
-st.set_page_config(page_title='QuadTree Image Compressor', layout="wide")
+st.set_page_config(page_title='QuadTree Image Compressor', layout="wide", page_icon=':camera:')
 
 
 # Helper function to convert size in bytes to appropriate unit
@@ -20,6 +20,7 @@ def convert_size(size_bytes):
 # Define function for main application
 def Main():
     # Sidebar
+    st.sidebar.image("QuadTree.png", use_column_width=True, width=100)
     st.sidebar.title('Options')
     compression_level = st.sidebar.radio("Compression Level", ("slightly less better", "slightly better",))
 
@@ -67,8 +68,9 @@ def Main():
 
     # Main content
     st.title('QuadTree Image Compressor')
+    
 
-    st.markdown("---")
+    st.divider()
 
     # Image upload
     uploaded_file = st.file_uploader("Upload Image", type=["png", "jpg", "jpeg"])
