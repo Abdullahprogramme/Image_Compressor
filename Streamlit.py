@@ -19,15 +19,17 @@ def convert_size(size_bytes):
     
 # Define function for main application
 def Main():
-    st.toast('Welcome to QuadTree Image Compressor!')
-    st.error('If a image is already very small in size, then the compression will not take place as when dividing into 4 quadrants, the size of the quadrant will be less than the threshold value and the quadrant will not be compressed further. So, their will be an error in the compression process. Please upload an image with a size greater than 100 KB.')
+    if "toast_shown" not in st.session_state:
+        st.toast('Welcome to QuadTree Image Compressor!')
+        st.session_state.toast_shown = True
+    st.error('When an image is already very small, further compression is prevented since, after split into four quadrants, the size of each quadrant will be less than the threshold value. There will thus be a problem with the compression process. Please include an image greater than 100 KB.')
     # Sidebar
     st.sidebar.image("images/QuadTree.png", use_column_width=True, width=100)
     st.sidebar.title('Options')
     compression_level = st.sidebar.radio("Compression Level", ("slightly less better", "slightly better",))
 
-    need_gif = st.sidebar.selectbox('Do you want a gif?', ('No', 'Yes'))
-
+    # need_gif = st.sidebar.selectbox('Do you want a gif?', ('No', 'Yes'))
+    need_gif = 'Yes' if st.sidebar.checkbox('Do you want a gif?') else 'No'
     st.sidebar.markdown("---")
     st.sidebar.title('About')
     expander = st.sidebar.expander('About this app', expanded=False)
@@ -121,6 +123,10 @@ def Main():
             compressed_size = os.path.getsize(temp_file.name)
             st.write('**Compressed Size:** ' + convert_size(compressed_size))
 
+            # Calculate and display the compression performance
+            compression_ratio = (original_size - compressed_size) / original_size * 100
+            st.success(f'**Compression Performance:** The image was compressed by {compression_ratio:.2f}%')
+
             # Convert the compressed image to binary data
             buffered = BytesIO()
             compressed_image.save(buffered, format="PNG")
@@ -130,10 +136,7 @@ def Main():
             st.download_button(label="Download Compressed Image", data=binary_data, file_name='compressed_image.png', mime='image/png')
             st.markdown("---")
 
-            # Calculate and display the compression performance
-            compression_ratio = (original_size - compressed_size) / original_size * 100
-            st.success(f'**Compression Performance:** The image was compressed by {compression_ratio:.2f}%')
-
+            
             if need_gif == 'Yes':
                 st.subheader('Gif')
                 # Embed the base64 encoded string in an HTML img tag
