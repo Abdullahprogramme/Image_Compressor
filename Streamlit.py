@@ -4,6 +4,7 @@ import tempfile
 from Main import main
 from io import BytesIO
 import base64
+import time
 
 # Set page configuration
 st.set_page_config(page_title='QuadTree Image Compressor', layout="wide", page_icon=':camera:')
@@ -106,6 +107,7 @@ def Main():
         # Progress Bar
         if st.button('Start Compression'):
             with st.spinner('Generating image...have patience, it may take a while!'):
+                start_time = time.time()
                 if need_gif == 'Yes':
                     compressed_image, gif = main(uploaded_file, compression_level, True)
                     # Convert the BytesIO object to a base64 encoded string
@@ -113,6 +115,7 @@ def Main():
                     gif_base64 = base64.b64encode(gif.read()).decode()
                 else:
                     compressed_image = main(uploaded_file, compression_level)
+                end_time = time.time()
                 st.success('Image Compression Complete!')
 
                 temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
@@ -126,7 +129,8 @@ def Main():
             # Calculate and display the compression performance
             compression_ratio = (original_size - compressed_size) / original_size * 100
             st.success(f'**Compression Performance:** The image was compressed by {compression_ratio:.2f}%')
-
+            st.success(f'**Time Taken:** {end_time - start_time:.2f} seconds')
+            
             # Convert the compressed image to binary data
             buffered = BytesIO()
             compressed_image.save(buffered, format="PNG")
