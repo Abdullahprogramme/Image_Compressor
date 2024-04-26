@@ -225,14 +225,13 @@ def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, show_lines=Fal
     return gif_bytes
 
 def main(image_path, option, need_gif=False):
-    MAX_DEPTH = 9
     SIZE_MULTIPLIER = 1
     if option == 'slightly less better':
         DETAIL_THRESHOLD = 10
-        user_depth = 6
+        MAX_DEPTH = user_depth = 6
     elif option == 'slightly better':
         DETAIL_THRESHOLD = 3
-        user_depth = 9
+        MAX_DEPTH = user_depth = 9
         
 
     # image_path = 'BMI.jpg'
