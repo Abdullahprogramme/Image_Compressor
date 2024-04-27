@@ -226,20 +226,21 @@ def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, show_lines=Fal
 
 def main(image_path, option, need_gif=False):
     SIZE_MULTIPLIER = 1
-    if option == 'slightly less better':
+    if option == 'Pixelated':
         DETAIL_THRESHOLD = 10
-        MAX_DEPTH = user_depth = 6
-    elif option == 'slightly better':
+        MAX_DEPTH = user_depth = 7
+    elif option == 'Average':
+        DETAIL_THRESHOLD = 7
+        MAX_DEPTH = user_depth = 8
+    elif option == 'Refined':
         DETAIL_THRESHOLD = 3
         MAX_DEPTH = user_depth = 9
         
 
-    # image_path = 'BMI.jpg'
     image = Image.open(image_path) # opening the image
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
     root, max_depth = Start_QuadTree(image, MAX_DEPTH, DETAIL_THRESHOLD) # starting the quad tree of the image
-    user_depth = 7
     image = Create_Image(root, max_depth, user_depth, show_lines=False)
     
     if need_gif == True:

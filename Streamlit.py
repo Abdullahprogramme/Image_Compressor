@@ -27,7 +27,7 @@ def Main():
     # Sidebar
     st.sidebar.image("images/QuadTree.png", use_column_width=True, width=100)
     st.sidebar.title('Options')
-    compression_level = st.sidebar.radio("Compression Level", ("slightly less better", "slightly better",))
+    compression_level = st.sidebar.radio("Compression Level", ("Pixelated", "Average", "Refined"), index=1)
 
     # need_gif = st.sidebar.selectbox('Do you want a gif?', ('No', 'Yes'))
     need_gif = 'Yes' if st.sidebar.checkbox('Do you want a gif?') else 'No'
