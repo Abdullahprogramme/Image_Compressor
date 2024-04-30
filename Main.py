@@ -3,13 +3,13 @@ from PIL import Image, ImageDraw
 import io
 
 def Weighted_Average(histogram):
-    total = sum(histogram)
+    histogram = np.array(histogram)
+    total = histogram.sum()
     error = value = 0
 
     if total > 0:
-        value = sum(i * x for i, x in enumerate(histogram)) / total
-        error = sum(x * (value - i) ** 2 for i, x in enumerate(histogram)) / total
-        error = error ** 0.5
+        value = (np.arange(len(histogram)) * histogram).sum() / total
+        error = ((histogram * (value - np.arange(len(histogram))) ** 2).sum() / total) ** 0.5
 
     return error
 
@@ -47,9 +47,8 @@ def Average_Colour(image):
 
     image_arr = np.asarray(image) # convert image to np array
     # get average of whole image
-    avg_color_per_row = np.average(image_arr, axis=0)
-    avg_color = np.average(avg_color_per_row, axis=0) 
-
+    avg_color = np.average(image_arr, axis=(0, 1))
+    # return tuple(map(int, avg_color))
     return (int(avg_color[0]), int(avg_color[1]), int(avg_color[2]))
 
 def Quadrant(image, bbox, depth):
