@@ -38,8 +38,8 @@ def Main():
     else:
         Tup = (False, 0)
     
-
-    set = st.sidebar.selectbox('Set Image Type', ('Regular', 'Gray Scale', 'Black and White', 'Sepia', 'Inverted', 'Thresholded', 'Brightened', 'Contrast'))
+    
+    set = st.sidebar.selectbox('Set Filter On Image', ('No Filter', 'Gray Scale', 'Black and White', 'Sepia', 'Inverted', 'Thresholded', 'Brightened', 'High Contrast', 'Soft Blur', 'Emboss-like'))
 
     # need_gif = st.sidebar.selectbox('Do you want a gif?', ('No', 'Yes'))
     need_gif = 'Yes' if st.sidebar.checkbox('Do you want a gif?') else 'No'

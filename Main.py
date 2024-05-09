@@ -96,6 +96,7 @@ def calculate_filters(quadrant, color_mode='Color'):
         quadrant['grayscale'] = grayscale_value
 
     elif color_mode == 'Black and White': 
+        grayscale_value = int(0.2989 * r + 0.5870 * g + 0.1140 * b)
         bw_value = 0 if grayscale_value < 128 else 255
         quadrant['bw'] = bw_value
 
@@ -131,7 +132,7 @@ def calculate_filters(quadrant, color_mode='Color'):
         # add brightness adjustment values to quadrant
         quadrant['Brightened'] = (brightness_r, brightness_g, brightness_b)
 
-    elif color_mode == 'Contrast':
+    elif color_mode == 'High Contrast':
         # calculate contrast adjustment values
         contrast_adjustment = 50
         average = (r + g + b) / 3
@@ -141,6 +142,22 @@ def calculate_filters(quadrant, color_mode='Color'):
 
         # add contrast adjustment values to quadrant
         quadrant['Contrast'] = (contrast_r, contrast_g, contrast_b)
+
+    elif color_mode == 'Soft Blur':
+        # calculate soft blur values
+        blur_adjustment = 100
+        blur_r = max(0, r - blur_adjustment)
+        blur_g = max(0, g - blur_adjustment)
+        blur_b = max(0, b - blur_adjustment)
+        quadrant['Soft Blur'] = (blur_r, blur_g, blur_b)
+
+    elif color_mode == 'Emboss-like':
+        # calculate emboss-like values
+        emboss_adjustment = 50
+        emboss_r = min(255, max(0, r + emboss_adjustment))
+        emboss_g = min(255, max(0, g + emboss_adjustment))
+        emboss_b = min(255, max(0, b + emboss_adjustment))
+        quadrant['Emboss-like'] = (emboss_r, emboss_g, emboss_b)
 
     return quadrant
 
@@ -237,8 +254,12 @@ def Create_Image(root, max_depth, user_depth, color_mode='Color', show_lines=Fal
             color = quadrant['thresholded']
         elif color_mode == 'Brightened':
             color = quadrant['Brightened']
-        elif color_mode == 'Contrast':
+        elif color_mode == 'High Contrast':
             color = quadrant['Contrast']
+        elif color_mode == 'Soft Blur':
+            color = quadrant['Soft Blur']
+        elif color_mode == 'Emboss-like':
+            color = quadrant['Emboss-like']
         else:
             color = quadrant['colour']
         if show_lines:
