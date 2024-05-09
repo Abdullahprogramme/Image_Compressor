@@ -51,6 +51,15 @@ def Average_Colour(image):
     # return tuple(map(int, avg_color))
     return (int(avg_color[0]), int(avg_color[1]), int(avg_color[2]))
 
+def Floyd_Steinberg_dithering(grayscale_value):
+    if grayscale_value < 128:
+        error = grayscale_value
+        bw_value = 0
+    else:
+        error = grayscale_value - 255
+        bw_value = 255
+    return bw_value, error
+
 def Quadrant(image, bbox, depth):
     quadrant = {} # dictionary to store the details of the quadrant
     quadrant['bbox'] = bbox # bounding box of the quadrant
@@ -64,6 +73,14 @@ def Quadrant(image, bbox, depth):
 
     quadrant['detail'] = Get_Detail(hist) # calculating the detail intensity of the quadrant
     quadrant['colour'] = Average_Colour(image) # calculating the average colour of the quadrant
+
+    # calculate the grayscale and black and white values
+    r, g, b = quadrant['colour']
+    grayscale_value = int(0.2989 * r + 0.5870 * g + 0.1140 * b)
+    bw_value = 0 if grayscale_value < 128 else 255
+
+    quadrant['grayscale'] = grayscale_value
+    quadrant['bw'] = bw_value
     return quadrant
 
 def Split_Quadrant(quadrant, image):
@@ -119,7 +136,7 @@ def Build(root, image, max_depth, MAX_DEPTH, DETAIL_THRESHOLD):
         max_depth = Build(child, image, max_depth, MAX_DEPTH, DETAIL_THRESHOLD) # building the quad tree of the child
     return max_depth
 
-def Create_Image(root, max_depth, user_depth, show_lines=False):
+def Create_Image(root, max_depth, user_depth,  color_mode='Color', show_lines=False):
     """
     Description:
         Create an image representation of the quadtree with a specified depth.
@@ -147,7 +164,12 @@ def Create_Image(root, max_depth, user_depth, show_lines=False):
     # Draw rectangle size of quadrant for each leaf quadrant
     for quadrant in leaf_quadrants:
         bbox = quadrant['bbox']
-        color = quadrant['colour']
+        if color_mode == 'Gray Scale':
+            color = (quadrant['grayscale'],) * 3
+        elif color_mode == 'Black and White':
+            color = (quadrant['bw'],) * 3
+        else:
+            color = quadrant['colour']
         if show_lines:
             draw.rectangle(bbox, color, outline=(0, 0, 0))
         else:
@@ -190,6 +212,7 @@ def Recursive_Search(quadrant, max_depth, append_leaf):
         for child in quadrant['children']:
             Recursive_Search(child, max_depth, append_leaf)
 
+
 def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, show_lines=False):
     '''
     description:
@@ -223,25 +246,32 @@ def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, show_lines=Fal
 
     return gif_bytes
 
-def main(image_path, option, need_gif=False):
+def main(image_path, option, Tup, set, need_gif=False):
+    Flag, MAX_DEPTH = Tup
+    if Flag == True:
+        user_depth = MAX_DEPTH
     SIZE_MULTIPLIER = 1
     if option == 'Pixelated':
         DETAIL_THRESHOLD = 10
-        MAX_DEPTH = user_depth = 7
+        if Flag == False:
+            MAX_DEPTH = user_depth = 7
     elif option == 'Average':
         DETAIL_THRESHOLD = 7
-        MAX_DEPTH = user_depth = 8
+        if Flag == False:
+            MAX_DEPTH = user_depth = 8
     elif option == 'Refined':
         DETAIL_THRESHOLD = 3
-        MAX_DEPTH = user_depth = 9
+        if Flag == False:
+            MAX_DEPTH = user_depth = 9
         
 
     image = Image.open(image_path) # opening the image
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
     root, max_depth = Start_QuadTree(image, MAX_DEPTH, DETAIL_THRESHOLD) # starting the quad tree of the image
-    image = Create_Image(root, max_depth, user_depth, show_lines=False)
+    image = Create_Image(root, max_depth, user_depth, color_mode=set, show_lines=False)
     
+
     if need_gif == True:
         gif = Create_Gif(root, max_depth, user_depth, duration=1000, loop=0, show_lines=True)
         return image, gif
