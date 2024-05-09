@@ -60,7 +60,7 @@ def Floyd_Steinberg_dithering(grayscale_value):
         bw_value = 255
     return bw_value, error
 
-def Quadrant(image, bbox, depth):
+def Quadrant(image, bbox, depth, color_mode='Color'):
     quadrant = {} # dictionary to store the details of the quadrant
     quadrant['bbox'] = bbox # bounding box of the quadrant
     quadrant['depth'] = depth # depth of the quadrant in the tree
@@ -74,16 +74,77 @@ def Quadrant(image, bbox, depth):
     quadrant['detail'] = Get_Detail(hist) # calculating the detail intensity of the quadrant
     quadrant['colour'] = Average_Colour(image) # calculating the average colour of the quadrant
 
-    # calculate the grayscale and black and white values
-    r, g, b = quadrant['colour']
-    grayscale_value = int(0.2989 * r + 0.5870 * g + 0.1140 * b)
-    bw_value = 0 if grayscale_value < 128 else 255
+    
+    quadrant = calculate_filters(quadrant, color_mode) # calculating the filters of the quadrant
 
-    quadrant['grayscale'] = grayscale_value
-    quadrant['bw'] = bw_value
     return quadrant
 
-def Split_Quadrant(quadrant, image):
+def calculate_filters(quadrant, color_mode='Color'):
+    ''' 
+    description:
+        This function calculates the filters of the quadrant.
+    Args:
+        quadrant: dictionary to store the details of the quadrant
+    '''
+    
+    # extract color values
+    r, g, b = quadrant['colour']
+
+    # calculate grayscale value
+    if color_mode == 'Gray Scale':
+        grayscale_value = int(0.2989 * r + 0.5870 * g + 0.1140 * b)
+        quadrant['grayscale'] = grayscale_value
+
+    elif color_mode == 'Black and White': 
+        bw_value = 0 if grayscale_value < 128 else 255
+        quadrant['bw'] = bw_value
+
+    elif color_mode == 'Sepia':
+        # calculate sepia values
+        sepia_r = int(0.393 * r + 0.769 * g + 0.189 * b)
+        sepia_g = int(0.349 * r + 0.686 * g + 0.168 * b)
+        sepia_b = int(0.272 * r + 0.534 * g + 0.131 * b)
+        quadrant['sepia'] = (sepia_r, sepia_g, sepia_b)
+
+    elif color_mode == 'Inverted':
+        # calculate inverted values
+        inverted_r = 255 - r
+        inverted_g = 255 - g
+        inverted_b = 255 - b
+        quadrant['inverted'] = (inverted_r, inverted_g, inverted_b)
+
+    elif color_mode == 'Thresholded':
+        # calculate thresholded values
+        threshold_value = 128
+        thresholded_r = 255 if r > threshold_value else 0
+        thresholded_g = 255 if g > threshold_value else 0
+        thresholded_b = 255 if b > threshold_value else 0
+        quadrant['thresholded'] = (thresholded_r, thresholded_g, thresholded_b)
+    
+    elif color_mode == 'Brightened':
+        # calculate brightness adjustment values
+        brightness_adjustment = 50
+        brightness_r = min(255, r + brightness_adjustment)
+        brightness_g = min(255, g + brightness_adjustment)
+        brightness_b = min(255, b + brightness_adjustment)
+
+        # add brightness adjustment values to quadrant
+        quadrant['Brightened'] = (brightness_r, brightness_g, brightness_b)
+
+    elif color_mode == 'Contrast':
+        # calculate contrast adjustment values
+        contrast_adjustment = 50
+        average = (r + g + b) / 3
+        contrast_r = min(255, int(average + contrast_adjustment * (r - average)))
+        contrast_g = min(255, int(average + contrast_adjustment * (g - average)))
+        contrast_b = min(255, int(average + contrast_adjustment * (b - average)))
+
+        # add contrast adjustment values to quadrant
+        quadrant['Contrast'] = (contrast_r, contrast_g, contrast_b)
+
+    return quadrant
+
+def Split_Quadrant(quadrant, image, color_mode='Color'):
     '''
     description:
         This function splits the input quadrant into 4 new quadrants.
@@ -96,25 +157,25 @@ def Split_Quadrant(quadrant, image):
     middle_y = top + (bottom - top) / 2 # getting the middle y coordinate of the quadrant
 
     # split root quadrant into 4 new quadrants
-    upper_left = Quadrant(image, (left, top, middle_x, middle_y), quadrant['depth']+1) # creating the upper left quadrant
-    upper_right = Quadrant(image, (middle_x, top, right, middle_y), quadrant['depth']+1) # creating the upper right quadrant
-    lower_left = Quadrant(image, (left, middle_y, middle_x, bottom), quadrant['depth']+1) # creating the lower left quadrant
-    lower_right = Quadrant(image, (middle_x, middle_y, right, bottom), quadrant['depth']+1) # creating the lower right quadrant
+    upper_left = Quadrant(image, (left, top, middle_x, middle_y), quadrant['depth']+1, color_mode) # creating the upper left quadrant
+    upper_right = Quadrant(image, (middle_x, top, right, middle_y), quadrant['depth']+1, color_mode) # creating the upper right quadrant
+    lower_left = Quadrant(image, (left, middle_y, middle_x, bottom), quadrant['depth']+1, color_mode) # creating the lower left quadrant
+    lower_right = Quadrant(image, (middle_x, middle_y, right, bottom), quadrant['depth']+1, color_mode) # creating the lower right quadrant
 
     quadrant['children'] = [upper_left, upper_right, lower_left, lower_right] # storing the children of the quadrant in the quadrant dictionary
 
-def Start_QuadTree(image, MAX_DEPTH, DETAIL_THRESHOLD):
+def Start_QuadTree(image, MAX_DEPTH, DETAIL_THRESHOLD, color_mode='Color'):
     '''
     description:
         This function starts the compression of the image by creating a quad tree of the image.
     Args:
         image: input image
     '''
-    root = Quadrant(image, image.getbbox(), 0) # creating the root quadrant of the image
-    max_depth = Build(root, image, 0, MAX_DEPTH, DETAIL_THRESHOLD) # building the quad tree of the image
+    root = Quadrant(image, image.getbbox(), 0, color_mode) # creating the root quadrant of the image
+    max_depth = Build(root, image, 0, MAX_DEPTH, DETAIL_THRESHOLD, color_mode) # building the quad tree of the image
     return root, max_depth
 
-def Build(root, image, max_depth, MAX_DEPTH, DETAIL_THRESHOLD):
+def Build(root, image, max_depth, MAX_DEPTH, DETAIL_THRESHOLD, color_mode='Color'):
     '''
     description:
         This function builds the quad tree of the input image.
@@ -130,13 +191,13 @@ def Build(root, image, max_depth, MAX_DEPTH, DETAIL_THRESHOLD):
         root['leaf'] = True # assigning the quadrant to a leaf node and stopping the recursion
         return max_depth
     
-    Split_Quadrant(root, image) # splitting the quadrant into 4 new quadrants
+    Split_Quadrant(root, image, color_mode) # splitting the quadrant into 4 new quadrants
 
     for child in root['children']: # iterating through the children of the quadrant
-        max_depth = Build(child, image, max_depth, MAX_DEPTH, DETAIL_THRESHOLD) # building the quad tree of the child
+        max_depth = Build(child, image, max_depth, MAX_DEPTH, DETAIL_THRESHOLD, color_mode) # building the quad tree of the child
     return max_depth
 
-def Create_Image(root, max_depth, user_depth,  color_mode='Color', show_lines=False):
+def Create_Image(root, max_depth, user_depth, color_mode='Color', show_lines=False):
     """
     Description:
         Create an image representation of the quadtree with a specified depth.
@@ -168,6 +229,16 @@ def Create_Image(root, max_depth, user_depth,  color_mode='Color', show_lines=Fa
             color = (quadrant['grayscale'],) * 3
         elif color_mode == 'Black and White':
             color = (quadrant['bw'],) * 3
+        elif color_mode == 'Sepia':
+            color = quadrant['sepia']
+        elif color_mode == 'Inverted':
+            color = quadrant['inverted']
+        elif color_mode == 'Thresholded':
+            color = quadrant['thresholded']
+        elif color_mode == 'Brightened':
+            color = quadrant['Brightened']
+        elif color_mode == 'Contrast':
+            color = quadrant['Contrast']
         else:
             color = quadrant['colour']
         if show_lines:
@@ -213,7 +284,7 @@ def Recursive_Search(quadrant, max_depth, append_leaf):
             Recursive_Search(child, max_depth, append_leaf)
 
 
-def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, show_lines=False):
+def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, color_mode='Color', show_lines=False):
     '''
     description:
         This function creates a gif of the quad tree.
@@ -227,10 +298,10 @@ def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, show_lines=Fal
     '''
 
     gif = []
-    end_product_image = Create_Image(root, max_depth, gif_depth, show_lines=show_lines)
+    end_product_image = Create_Image(root, max_depth, gif_depth, color_mode, show_lines=show_lines)
 
     for i in range(gif_depth):
-        image = Create_Image(root, max_depth, i, show_lines=show_lines)
+        image = Create_Image(root, max_depth, i, color_mode, show_lines=show_lines)
         gif.append(image)
     for _ in range(4):
         gif.append(end_product_image)
@@ -268,12 +339,12 @@ def main(image_path, option, Tup, set, need_gif=False):
     image = Image.open(image_path) # opening the image
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
-    root, max_depth = Start_QuadTree(image, MAX_DEPTH, DETAIL_THRESHOLD) # starting the quad tree of the image
+    root, max_depth = Start_QuadTree(image, MAX_DEPTH, DETAIL_THRESHOLD, color_mode=set) # starting the quad tree of the image
     image = Create_Image(root, max_depth, user_depth, color_mode=set, show_lines=False)
     
 
     if need_gif == True:
-        gif = Create_Gif(root, max_depth, user_depth, duration=1000, loop=0, show_lines=True)
+        gif = Create_Gif(root, max_depth, user_depth, duration=1000, loop=0, color_mode=set, show_lines=True)
         return image, gif
     return image
 

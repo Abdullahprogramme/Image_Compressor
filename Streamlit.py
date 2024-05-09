@@ -26,6 +26,8 @@ def Main():
     st.error('When an image is already very small, further compression is prevented since, after split into four quadrants, the size of each quadrant will be less than the threshold value. There will thus be a problem with the compression process. Please include an image greater than 100 KB.')
     # Sidebar
     st.sidebar.image("images/QuadTree.png", use_column_width=True, width=100)
+
+    
     st.sidebar.title('Options')
     compression_level = st.sidebar.radio("Compression Level", ("Pixelated", "Average", "Refined"), index=1)
 
@@ -37,12 +39,11 @@ def Main():
         Tup = (False, 0)
     
 
-    set = st.sidebar.selectbox('Set Image Type', ('Regular', 'Gray Scale', 'Black and White'))
-
-
+    set = st.sidebar.selectbox('Set Image Type', ('Regular', 'Gray Scale', 'Black and White', 'Sepia', 'Inverted', 'Thresholded', 'Brightened', 'Contrast'))
 
     # need_gif = st.sidebar.selectbox('Do you want a gif?', ('No', 'Yes'))
     need_gif = 'Yes' if st.sidebar.checkbox('Do you want a gif?') else 'No'
+
     st.sidebar.markdown("---")
     st.sidebar.title('About')
     expander = st.sidebar.expander('About this app', expanded=False)
