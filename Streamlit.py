@@ -5,8 +5,10 @@ from Main import main
 from io import BytesIO
 import base64
 import time
+from PIL import Image
+import numpy as np
+from sklearn.cluster import KMeans
 
-# Set page configuration
 st.set_page_config(page_title='QuadTree Image Compressor', layout="wide", page_icon=':camera:')
 
 # Helper function to convert size in bytes to appropriate unit
@@ -18,6 +20,34 @@ def convert_size(size_bytes):
     else:
         return f"{size_bytes / 1048576:.2f} MB"
     
+def display_major_colors(image_path):
+    # Load the image
+    image = Image.open(image_path)
+
+    # Convert the image to RGB
+    image = image.convert('RGB')
+
+    # Reshape the image to be a list of RGB pixels
+    pixels = np.array(image).reshape(-1, 3)
+
+    # Perform K-means clustering to find the most dominant colors
+    kmeans = KMeans(n_clusters=3)
+    kmeans.fit(pixels)
+
+    # Get the RGB values of the cluster centers
+    colors = kmeans.cluster_centers_
+
+    st.subheader('Dominant Colors')
+    # Create a row of columns
+    cols = st.columns(3)
+    
+    # Display the dominant colors
+    for i, color in enumerate(colors):
+        # Convert RGB values to hexadecimal color code
+        color_hex = '#%02x%02x%02x' % (int(color[0]), int(color[1]), int(color[2]))
+        cols[i].markdown(f'<div style="background-color: {color_hex}; height: 50px; width: 50px;"></div>', unsafe_allow_html=True)
+        cols[i].markdown(f'<p>{color_hex}</p>', unsafe_allow_html=True)
+
 # Define function for main application
 def Main():
     if "toast_shown" not in st.session_state:
@@ -43,7 +73,7 @@ def Main():
 
         Default, Custom = st.tabs(['Default', 'Custom'])
         with Default:
-            st.write('''Now you can't set the depth of the tree.''')
+            st.write('''You can't set the default depth, go to the custom tab to set the depth of the tree.''')
             Tup = (False, 0)
         with Custom:
         # Thresh_Yes_OR_NO = st.checkbox('Do you want to set a custom depth of the tree?')
@@ -149,6 +179,9 @@ def Main():
             st.image(temp_file.name, caption='Compressed Image', use_column_width=True)
             compressed_size = os.path.getsize(temp_file.name)
             st.write('**Compressed Size:** ' + convert_size(compressed_size))
+
+            # Display the major colors of the compressed image
+            display_major_colors(temp_file.name)
 
             # Calculate and display the compression performance
             compression_ratio = (original_size - compressed_size) / original_size * 100
