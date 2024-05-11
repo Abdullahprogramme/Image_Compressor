@@ -70,18 +70,7 @@ def Main():
             need_gif = 'Yes' if st.checkbox('Do you want a gif?') else 'No'
 
             submit_button = st.form_submit_button(label='Apply Changes', type="primary", use_container_width=True)
-
-        Default, Custom = st.tabs(['Default', 'Custom'])
-        with Default:
-            st.write('''You can't set the default depth, go to the custom tab to set the depth of the tree.''')
-            Tup = (False, 0)
-        with Custom:
-        # Thresh_Yes_OR_NO = st.checkbox('Do you want to set a custom depth of the tree?')
-        # if Thresh_Yes_OR_NO:
-            MAX_DEPTH = st.slider('Set Detail Threshold', 0, 9, 8)
-            Tup = (True, MAX_DEPTH) 
-        # else:
-        #     Tup = (False, 0)
+ 
 
         st.markdown("---")
         st.title('About')
@@ -163,12 +152,12 @@ def Main():
             with st.spinner('Generating image...have patience, it may take a while!'):
                 start_time = time.time()
                 if need_gif == 'Yes':
-                    compressed_image, gif = main(uploaded_file, compression_level, Tup, set, True)
+                    compressed_image, gif = main(uploaded_file, compression_level, set, True)
                     # Convert the BytesIO object to a base64 encoded string
                     gif.seek(0)
                     gif_base64 = base64.b64encode(gif.read()).decode()
                 else:
-                    compressed_image = main(uploaded_file, compression_level, Tup, set)
+                    compressed_image = main(uploaded_file, compression_level, set)
                 end_time = time.time()
                 st.success('Image Compression Complete!')
 

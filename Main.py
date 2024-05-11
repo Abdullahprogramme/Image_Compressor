@@ -338,23 +338,18 @@ def Create_Gif(root, max_depth, gif_depth, duration=1000, loop=0, color_mode='Co
 
     return gif_bytes
 
-def main(image_path, option, Tup, set, need_gif=False):
-    Flag, MAX_DEPTH = Tup
-    if Flag == True:
-        user_depth = MAX_DEPTH
+def main(image_path, option, set, need_gif=False):
+
     SIZE_MULTIPLIER = 1
     if option == 'Pixelated':
         DETAIL_THRESHOLD = 10
-        if Flag == False:
-            MAX_DEPTH = user_depth = 7
+        MAX_DEPTH = user_depth = 7
     elif option == 'Average':
         DETAIL_THRESHOLD = 7
-        if Flag == False:
-            MAX_DEPTH = user_depth = 8
+        MAX_DEPTH = user_depth = 8
     elif option == 'Refined':
         DETAIL_THRESHOLD = 3
-        if Flag == False:
-            MAX_DEPTH = user_depth = 9
+        MAX_DEPTH = user_depth = 9
         
 
     image = Image.open(image_path) # opening the image
